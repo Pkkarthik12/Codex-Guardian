@@ -71,6 +71,16 @@ SECRET_EXPOSURE_PATTERNS = (
     r"\b(?:printenv|set)\b",
     r"\becho\s+\$env:",
     r"\becho\s+\$[A-Z0-9_]*(?:KEY|TOKEN|SECRET|PASSWORD)",
+    r"\becho\s+%[A-Z0-9_]*(?:KEY|TOKEN|SECRET|PASSWORD)%",
+)
+
+SAFE_SHELL_COMMAND_PATTERNS = (
+    r"^(?:python|python3|py)\s+-m\s+unittest(?:\s|$)",
+    r"^(?:python|python3|py)\s+-m\s+compileall(?:\s|$)",
+    r"^git\s+status(?:\s|$)",
+    r"^(?:pwd|get-location)\s*$",
+    r"^(?:dir|ls)(?:\s+[\w./\\*-]+)?\s*$",
+    r"^echo\s+[^$%`;&|<>]+$",
 )
 
 
@@ -214,13 +224,23 @@ def _review_shell_command(command: str) -> list[RuleHit]:
     if _matches_any(command, GIT_WRITE_PATTERNS):
         hits.append(_review_git_command(command))
 
-    if not hits:
+    if _matches_any(command, SAFE_SHELL_COMMAND_PATTERNS):
         hits.append(
             RuleHit(
                 "allow",
                 "low",
-                "The shell command does not match known risky patterns.",
-                "safe_shell_command_allowed",
+                "The shell command is in the automatic allowlist.",
+                "safe_shell_allowlist_allowed",
+            )
+        )
+
+    if not hits:
+        hits.append(
+            RuleHit(
+                "ask_user",
+                "medium",
+                "The shell command is not in the automatic allowlist, so it needs approval.",
+                "unknown_shell_requires_user",
             )
         )
 

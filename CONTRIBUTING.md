@@ -6,7 +6,8 @@ Thanks for helping improve Codex Guardian.
 
 - Keep safety rules easy to read and easy to test.
 - Prefer deterministic blocking rules for destructive or privacy-sensitive actions.
-- Use AI review as a second opinion, not as the only approval mechanism.
+- Use AI review as a second opinion, not as the automatic approval mechanism.
+- Remember that `run` and `enforce` can execute allowed commands.
 - Add tests for every new policy rule.
 - Keep the default install dependency-free when possible.
 
@@ -14,7 +15,7 @@ Thanks for helping improve Codex Guardian.
 
 ```powershell
 python -m unittest discover -s tests
-python -m codex_guardian review examples/safe-file-edit.json
+python -m codex_guardian run -- echo guardian-ok
 ```
 
 ## Pull Request Checklist

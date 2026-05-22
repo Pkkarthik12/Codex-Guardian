@@ -1,7 +1,7 @@
 [project]
 name = "codex-guardian"
 version = "0.1.0"
-description = "A policy and review layer for proposed Codex actions."
+description = "An automatic approval gate for proposed Codex actions."
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }

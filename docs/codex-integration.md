@@ -1,61 +1,58 @@
 # Codex Integration
 
-Codex Guardian can be attached to Codex in stages.
+Codex Guardian now has an enforcement path, not just a review path.
 
-## Stage 1: CLI Review
+## Direct CLI Gate
 
-Create an action proposal JSON file and ask Guardian to review it:
+Use this when you want Codex or a script to run commands through Guardian:
 
 ```powershell
-python -m codex_guardian review action.json --pretty
+python -m codex_guardian run -- echo guardian-ok
 ```
 
-Codex can use this pattern before running a risky command or editing sensitive files.
+Behavior:
 
-## Stage 2: MCP Tool
+- `allow`: command runs automatically.
+- `ask_user`: command is blocked by default.
+- `decline`: command is blocked always.
 
-The package includes a minimal stdio MCP server:
+For interactive approval of `ask_user` commands:
+
+```powershell
+python -m codex_guardian run --interactive -- python tools/task.py
+```
+
+## Proposal Gate
+
+Codex can write an action proposal JSON and ask Guardian to enforce it:
+
+```powershell
+python -m codex_guardian enforce action.json --json
+```
+
+Only `shell_command` actions are executed by the built-in runner. File edits, reads, and searches are reviewed so the caller can enforce the decision.
+
+## MCP Tool
+
+The package includes a small stdio MCP server:
 
 ```powershell
 python -m codex_guardian.mcp_server
 ```
 
-The included plugin scaffold points at that server from:
+The plugin scaffold at `plugins/codex-guardian` exposes two tools:
 
-```text
-plugins/codex-guardian/.mcp.json
-```
+- `review_action`
+- `guarded_shell_command`
 
-The exposed tool is:
-
-```text
-review_action
-```
-
-It accepts the same proposal shape as the CLI and returns a JSON decision.
-
-## Stage 3: Codex Plugin
-
-The plugin scaffold lives at:
-
-```text
-plugins/codex-guardian
-```
-
-It contains:
-
-- `.codex-plugin/plugin.json`
-- `.mcp.json`
-- `skills/codex-guardian/SKILL.md`
-
-The skill teaches Codex to call `review_action` before risky actions.
+`guarded_shell_command` is the automatic gate. It executes only when policy returns `allow`.
 
 ## Important Limit
 
-This project does not magically intercept every Codex operation by itself. It gives Codex a reviewer and policy tool. Hard enforcement still requires one of these:
+Codex Guardian can enforce commands that are routed through it. It cannot magically intercept commands that bypass it.
 
-- Codex running in a restrictive built-in approval mode.
-- A host-level Codex hook that routes proposed actions through Guardian.
-- A wrapper that refuses to execute actions unless Guardian returns `allow`.
+Use one of these patterns:
 
-Use Codex's built-in approval modes for real enforcement while this project grows.
+- Ask Codex to use `codex-guardian run -- <command>` for shell commands.
+- Configure Codex/plugin workflows to call `guarded_shell_command`.
+- Keep Codex's normal approval settings enabled for actions that are not routed through Guardian.

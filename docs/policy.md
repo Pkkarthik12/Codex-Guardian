@@ -1,48 +1,55 @@
 # Policy
 
-Codex Guardian returns one of three decisions.
+Codex Guardian is strict by default because it can execute commands automatically.
 
 ## Decisions
 
-- `allow`: The action looks low risk and matches known safe patterns.
-- `ask_user`: The action may be valid, but a human should confirm it first.
-- `decline`: The action looks unsafe enough that it should not proceed.
+- `allow`: execute automatically.
+- `ask_user`: block unless interactive approval is enabled.
+- `decline`: block always.
 
-## Risk Levels
+## Default Automatic Allowlist
 
-- `low`: Normal project read, search, or scoped edit.
-- `medium`: Environment changes, network access, unknown actions, git writes.
-- `high`: Secret-looking paths or paths outside the workspace.
-- `critical`: Destructive commands or secret exposure.
+Allowed:
 
-## Default Rules
+- `python -m unittest ...`
+- `python -m compileall ...`
+- `git status`
+- `dir`, `ls`, `pwd`, `Get-Location`
+- simple literal `echo ...`
+- normal project file reads/searches when reviewed as proposals
+- scoped project file edits when reviewed as proposals
 
-Allowed by default:
+Ask user:
 
-- Reading project files.
-- Searching project files.
-- Editing project files that do not look sensitive.
-- Shell commands that do not match risky patterns.
-
-Ask the user:
-
-- Dependency installs.
-- Network commands.
-- Git write operations.
-- Secret-looking paths.
-- Absolute paths or parent directory paths.
-- Unknown action types.
+- arbitrary shell commands
+- dependency installs
+- network commands
+- git write operations
+- absolute paths or parent-directory paths
+- secret-looking paths
+- unknown action types
 
 Decline:
 
-- Broad destructive commands.
-- Git commands that can destroy local work.
-- Commands that appear to print secrets or environment variables.
+- broad destructive deletes
+- dangerous git cleanup/reset commands
+- commands that appear to print secrets or environment variables
+
+## Why Unknown Commands Are Not Auto-Allowed
+
+An unknown command can run arbitrary code. For example:
+
+```powershell
+python tools/task.py
+```
+
+That may be completely valid, but the automatic gate cannot know that safely from the command string alone. So it returns `ask_user` unless the policy is extended.
 
 ## Future Policy Ideas
 
-- Diff-aware review for file edits.
-- User-customizable rules in `guardian-policy.yml`.
-- Project-specific allowlists.
-- Optional AI reviewer for ambiguous actions.
-- Stronger sandbox-aware path validation.
+- Project-specific `guardian-policy.yml`.
+- Diff-aware file edit checks.
+- Command parser for safer shell analysis.
+- Optional AI second opinion for ambiguous actions.
+- Signed policy bundles for teams.

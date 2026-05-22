@@ -1,58 +1,45 @@
 ---
 name: codex-guardian
-description: Review proposed Codex actions with a local policy tool before running risky commands, editing sensitive files, installing dependencies, using network access, or changing git state.
+description: Gate proposed Codex shell commands with a local policy tool that automatically executes allowed commands and blocks unsafe commands.
 ---
 
 # Codex Guardian
 
-Use this skill when a proposed Codex action may need policy review before it runs.
+Use this skill when Codex is about to run a shell command or perform a risky action.
 
-## When To Review
+## Preferred Tool
 
-Call the `review_action` MCP tool before:
+Use `guarded_shell_command` instead of running shell commands directly.
 
-- Running shell commands that can change files or system state.
+Input:
+
+```json
+{
+  "user_request": "Run the tests",
+  "command": "python -m unittest discover -s tests",
+  "cwd": "project root"
+}
+```
+
+Behavior:
+
+- `allow`: the tool executes the command automatically.
+- `ask_user`: the tool blocks by default.
+- `decline`: the tool blocks always.
+
+## Review Only
+
+Use `review_action` when Codex only needs a decision and another system will enforce it.
+
+## When To Gate
+
+Call Guardian before:
+
+- Running shell commands.
 - Installing dependencies.
 - Accessing the network.
 - Editing secret-looking files such as `.env`, credentials, tokens, or SSH keys.
 - Running git write operations like commit, push, reset, clean, merge, rebase, checkout, or switch.
 - Editing files outside the current project scope.
-- Performing any action that feels ambiguous or higher risk.
-
-## Proposal Shape
-
-Send the tool a JSON object:
-
-```json
-{
-  "user_request": "Fix the login bug",
-  "action": {
-    "type": "shell_command",
-    "description": "Run the test suite",
-    "command": "python -m unittest",
-    "paths": ["tests"]
-  },
-  "context": {
-    "cwd": "project root"
-  }
-}
-```
-
-Action types:
-
-- `file_read`
-- `file_edit`
-- `search`
-- `shell_command`
-- `git`
-- `network`
-- `dependency_install`
-- `unknown`
-
-## Decision Handling
-
-- `allow`: proceed normally.
-- `ask_user`: ask the user for approval before continuing.
-- `decline`: do not perform the action. Explain the reason briefly and offer a safer alternative.
 
 Never bypass a `decline` decision.

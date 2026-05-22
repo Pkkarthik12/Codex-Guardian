@@ -1,8 +1,0 @@
-{
-  "user_request": "Fix the login validation bug",
-  "action": {
-    "type": "file_edit",
-    "description": "Update validation in src/auth/login.py",
-    "paths": ["src/auth/login.py"]
-  }
-}

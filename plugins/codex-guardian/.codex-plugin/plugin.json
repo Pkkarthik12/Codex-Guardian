@@ -1,12 +1,12 @@
 {
   "name": "codex-guardian",
   "version": "0.1.0",
-  "description": "Review proposed Codex actions with a local approval policy engine.",
+  "description": "Gate proposed Codex shell commands with a local automatic approval engine.",
   "author": {
     "name": "Codex Guardian Contributors"
   },
-  "homepage": "https://github.com/your-name/codex-guardian",
-  "repository": "https://github.com/your-name/codex-guardian",
+  "homepage": "https://github.com/Pkkarthik12/Codex-Guardian",
+  "repository": "https://github.com/Pkkarthik12/Codex-Guardian",
   "license": "MIT",
   "keywords": [
     "codex",
@@ -19,8 +19,8 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Codex Guardian",
-    "shortDescription": "Review proposed Codex actions before they run.",
-    "longDescription": "Codex Guardian adds a local policy reviewer for proposed Codex actions. It can return allow, ask_user, or decline decisions for file edits, shell commands, git operations, dependency installs, network access, and secret-sensitive paths.",
+    "shortDescription": "Automatically run only shell commands that pass policy.",
+    "longDescription": "Codex Guardian adds a local policy gate for proposed Codex actions. Its guarded_shell_command tool automatically executes commands only when policy returns allow, blocks ask_user by default, and declines dangerous actions.",
     "developerName": "Codex Guardian Contributors",
     "category": "Developer Tools",
     "capabilities": [
@@ -28,13 +28,13 @@
       "MCP",
       "Security"
     ],
-    "websiteURL": "https://github.com/your-name/codex-guardian",
-    "privacyPolicyURL": "https://github.com/your-name/codex-guardian/blob/main/SECURITY.md",
-    "termsOfServiceURL": "https://github.com/your-name/codex-guardian/blob/main/LICENSE",
+    "websiteURL": "https://github.com/Pkkarthik12/Codex-Guardian",
+    "privacyPolicyURL": "https://github.com/Pkkarthik12/Codex-Guardian/blob/main/SECURITY.md",
+    "termsOfServiceURL": "https://github.com/Pkkarthik12/Codex-Guardian/blob/main/LICENSE",
     "defaultPrompt": [
-      "Review this proposed Codex action with Codex Guardian.",
-      "Check whether this shell command should be allowed.",
-      "Decide whether this file edit should require user approval."
+      "Run this shell command through Codex Guardian.",
+      "Gate this command and execute it only if allowed.",
+      "Review this proposed Codex action without executing it."
     ],
     "brandColor": "#2563EB"
   }

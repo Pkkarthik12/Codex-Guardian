@@ -11,5 +11,6 @@ dist/
 .venv/
 venv/
 .guardian-audit.jsonl
+.codex-guardian-audit.jsonl
 .env
 .env.*

@@ -1,115 +1,139 @@
 # Codex Guardian
 
-Codex Guardian is an open-source starter project for reviewing proposed Codex actions before they happen.
+Codex Guardian is an open-source automatic approval gate for coding agents.
 
-It is designed around a simple safety loop:
+It does not only review actions. It can sit in front of a command, decide whether the action is safe, and automatically run only the actions that pass policy.
 
 ```text
-Codex proposes an action
-Codex Guardian reviews the action
-Guardian returns allow, ask_user, or decline
-Codex continues only when the decision is safe
+Codex proposes a command
+Codex Guardian checks policy
+allow      -> command runs automatically
+ask_user   -> command is blocked unless interactive approval is enabled
+decline    -> command never runs
 ```
 
-This first version is intentionally small and auditable. The core decision engine uses deterministic rules, because hard safety boundaries should not depend only on another AI model. An AI reviewer can be added later as a second opinion for explanations and edge cases.
+The core is deterministic and dependency-free. AI review can be added later, but the first safety boundary is plain code that anyone can audit.
 
-## What It Can Do
+## What It Does Now
 
-- Review file reads, file edits, shell commands, git operations, network actions, and dependency installs.
-- Detect risky patterns like secret access, destructive commands, project-wide deletes, network downloads, and git history rewriting.
-- Return machine-readable JSON decisions.
-- Write an audit log for every reviewed action.
-- Expose a small MCP-style stdio server with a `review_action` tool for Codex workflows.
-- Provide a Codex plugin scaffold under `plugins/codex-guardian`.
+- Automatically executes allowlisted low-risk shell commands.
+- Blocks destructive commands like recursive deletes and dangerous git cleanup.
+- Blocks uncertain commands unless the user explicitly approves them in interactive mode.
+- Detects dependency installs, network calls, secret-looking paths, and secret exposure patterns.
+- Writes JSON audit logs.
+- Exposes an MCP-style `guarded_shell_command` tool for Codex/plugin workflows.
 
 ## Quick Start
 
+Review only:
+
 ```powershell
-python -m codex_guardian review examples/safe-file-edit.json
-python -m codex_guardian review examples/destructive-command.json
-python -m codex_guardian review examples/install-dependency.json --audit-log .guardian-audit.jsonl
+python -m codex_guardian review examples/auto-allowed-command.json --pretty
 ```
 
-You should see a JSON response like:
+Automatically gate and run a command:
+
+```powershell
+python -m codex_guardian run -- echo guardian-ok
+```
+
+Run from a proposal file:
+
+```powershell
+python -m codex_guardian enforce examples/auto-allowed-command.json --json
+```
+
+Block dangerous commands:
+
+```powershell
+python -m codex_guardian enforce examples/declined-command.json --json
+```
+
+## Decisions
+
+- `allow`: safe enough to run automatically.
+- `ask_user`: not automatically allowed; blocked by default.
+- `decline`: unsafe; never run.
+
+Exit codes:
+
+- `0`: allowed, or allowed command finished with exit code 0.
+- `2`: user approval required and not granted.
+- `3`: declined by policy.
+- Any other code: the allowed command ran and returned that process exit code.
+
+## Proposal Format
 
 ```json
 {
-  "decision": "ask_user",
-  "risk_level": "medium",
-  "reasons": [
-    "Dependency installation can change the environment and may reach the network."
-  ],
-  "matched_rules": [
-    "dependency_install_requires_user"
-  ]
-}
-```
-
-## Action Proposal Format
-
-```json
-{
-  "user_request": "Fix the login validation bug",
+  "user_request": "Run the test suite",
   "action": {
-    "type": "file_edit",
-    "description": "Update validation in src/auth/login.py",
-    "paths": ["src/auth/login.py"]
+    "type": "shell_command",
+    "description": "Run unit tests",
+    "command": "python -m unittest discover -s tests",
+    "paths": ["tests"]
   }
 }
 ```
 
 Supported action types:
 
+- `shell_command`
 - `file_read`
 - `file_edit`
 - `search`
-- `shell_command`
 - `git`
 - `network`
 - `dependency_install`
 - `unknown`
 
-## CLI Exit Codes
+Only `shell_command` actions can be executed by the built-in runner. Other action types are reviewed and returned as decisions for Codex or another wrapper to enforce.
 
-- `0`: allowed
-- `2`: ask the user before continuing
-- `3`: declined
+## Automatic Allowlist
+
+The default automatic runner is conservative. It auto-runs commands like:
+
+- `python -m unittest ...`
+- `python -m compileall ...`
+- `git status`
+- `dir`, `ls`, `pwd`, `Get-Location`
+- simple literal `echo ...`
+
+It does not auto-run arbitrary scripts, dependency installs, network commands, git writes, or destructive commands.
 
 ## Codex Integration
 
-There are two practical integration paths:
-
-1. Use the CLI from a Codex workflow:
-
-```powershell
-python -m codex_guardian review action.json
-```
-
-2. Install or adapt the plugin scaffold in `plugins/codex-guardian`, which exposes a `review_action` tool through the included MCP server.
-
-Important: this prototype can help Codex ask for review, but true automatic interception of every Codex action depends on host-level Codex support. Until then, use Codex's built-in approval modes for enforcement and Guardian as a reviewer/policy layer.
-
-See [docs/codex-integration.md](docs/codex-integration.md) for details.
-
-## Project Layout
+The plugin scaffold is in:
 
 ```text
-codex_guardian/           Python package
-examples/                 Sample action proposals
-tests/                    Unit tests
-docs/                     Integration and policy notes
-plugins/codex-guardian/   Codex plugin scaffold
-prompts/                  Optional AI reviewer prompt
+plugins/codex-guardian
 ```
+
+It exposes:
+
+- `review_action`: decision only.
+- `guarded_shell_command`: decision plus automatic execution only when policy returns `allow`.
+
+This gives Codex a real gate to call instead of running a command directly. Full host-level interception still depends on how Codex is configured, so the safest pattern is: route risky commands through `codex-guardian run` or the MCP `guarded_shell_command` tool.
 
 ## Development
 
 ```powershell
 python -m unittest discover -s tests
-python -m codex_guardian review examples/safe-file-edit.json
+python -m codex_guardian run -- echo guardian-ok
 ```
 
-No third-party Python dependencies are required for the MVP.
+No third-party Python dependencies are required.
+
+## Project Layout
+
+```text
+codex_guardian/           Policy engine, CLI, enforcer, MCP server
+examples/                 Sample action proposals
+tests/                    Unit tests
+docs/                     Integration and policy notes
+plugins/codex-guardian/   Codex plugin scaffold
+```
 
 ## License
 

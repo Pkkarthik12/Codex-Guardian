@@ -1,0 +1,8 @@
+{
+  "user_request": "Run a harmless visible command",
+  "action": {
+    "type": "shell_command",
+    "description": "Print a test value",
+    "command": "echo guardian-ok"
+  }
+}

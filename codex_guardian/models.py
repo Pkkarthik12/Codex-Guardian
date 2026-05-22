@@ -60,6 +60,19 @@ class ActionProposal:
             context=context_value,
         )
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "user_request": self.user_request,
+            "action": {
+                "type": self.action.type,
+                "description": self.action.description,
+                "command": self.action.command,
+                "paths": list(self.action.paths),
+                **self.action.metadata,
+            },
+            "context": self.context,
+        }
+
 
 @dataclass(frozen=True)
 class Decision:
