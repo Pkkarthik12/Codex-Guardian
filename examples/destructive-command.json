@@ -1,0 +1,9 @@
+{
+  "user_request": "Clean up generated output",
+  "action": {
+    "type": "shell_command",
+    "description": "Remove the whole project directory",
+    "command": "rm -rf .",
+    "paths": ["."]
+  }
+}

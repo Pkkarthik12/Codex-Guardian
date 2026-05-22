@@ -1,0 +1,41 @@
+{
+  "name": "codex-guardian",
+  "version": "0.1.0",
+  "description": "Review proposed Codex actions with a local approval policy engine.",
+  "author": {
+    "name": "Codex Guardian Contributors"
+  },
+  "homepage": "https://github.com/your-name/codex-guardian",
+  "repository": "https://github.com/your-name/codex-guardian",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "approval",
+    "policy",
+    "ai-safety",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Codex Guardian",
+    "shortDescription": "Review proposed Codex actions before they run.",
+    "longDescription": "Codex Guardian adds a local policy reviewer for proposed Codex actions. It can return allow, ask_user, or decline decisions for file edits, shell commands, git operations, dependency installs, network access, and secret-sensitive paths.",
+    "developerName": "Codex Guardian Contributors",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "MCP",
+      "Security"
+    ],
+    "websiteURL": "https://github.com/your-name/codex-guardian",
+    "privacyPolicyURL": "https://github.com/your-name/codex-guardian/blob/main/SECURITY.md",
+    "termsOfServiceURL": "https://github.com/your-name/codex-guardian/blob/main/LICENSE",
+    "defaultPrompt": [
+      "Review this proposed Codex action with Codex Guardian.",
+      "Check whether this shell command should be allowed.",
+      "Decide whether this file edit should require user approval."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

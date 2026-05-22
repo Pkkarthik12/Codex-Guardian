@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "codex-guardian": {
+      "command": "python",
+      "args": [
+        "./scripts/run_mcp.py"
+      ]
+    }
+  }
+}

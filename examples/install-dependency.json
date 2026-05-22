@@ -1,0 +1,9 @@
+{
+  "user_request": "Run the test suite",
+  "action": {
+    "type": "shell_command",
+    "description": "Install Python dependencies",
+    "command": "pip install -r requirements.txt",
+    "paths": ["requirements.txt"]
+  }
+}
